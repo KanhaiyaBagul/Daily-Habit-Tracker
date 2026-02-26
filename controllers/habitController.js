@@ -1,10 +1,13 @@
-const Habit = require('../models/Habit');
+const { readData, writeData } = require('../models/Habit');
+const crypto = require('crypto');
 
 // @desc    Get all habits
 // @route   GET /api/habits
 exports.getAllHabits = async (req, res) => {
     try {
-        const habits = await Habit.find().sort({ createdAt: -1 });
+        const habits = await readData();
+        // Sort by createdAt descending
+        habits.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         res.status(200).json(habits);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -20,13 +23,24 @@ exports.createHabit = async (req, res) => {
             return res.status(400).json({ message: 'Habit name is required' });
         }
 
-        const habitExists = await Habit.findOne({ habitName });
+        const habits = await readData();
+        const habitExists = habits.find(h => h.habitName === habitName);
         if (habitExists) {
             return res.status(400).json({ message: 'Habit already exists' });
         }
 
-        const habit = await Habit.create({ habitName });
-        res.status(201).json(habit);
+        const newHabit = {
+            _id: crypto.randomUUID(),
+            habitName: habitName,
+            createdAt: new Date().toISOString(),
+            records: {},
+            streakCount: 0
+        };
+
+        habits.push(newHabit);
+        await writeData(habits);
+
+        res.status(201).json(newHabit);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -36,12 +50,16 @@ exports.createHabit = async (req, res) => {
 // @route   DELETE /api/habits/:id
 exports.deleteHabit = async (req, res) => {
     try {
-        const habit = await Habit.findById(req.params.id);
-        if (!habit) {
+        const habits = await readData();
+        const habitIndex = habits.findIndex(h => h._id === req.params.id);
+        
+        if (habitIndex === -1) {
             return res.status(404).json({ message: 'Habit not found' });
         }
 
-        await habit.deleteOne();
+        habits.splice(habitIndex, 1);
+        await writeData(habits);
+
         res.status(200).json({ message: 'Habit removed' });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -59,29 +77,33 @@ const getYesterdayString = (todayStr) => {
 // @route   POST /api/habits/:id/mark
 exports.markHabitCompleted = async (req, res) => {
     try {
-        const habit = await Habit.findById(req.params.id);
+        const habits = await readData();
+        const habit = habits.find(h => h._id === req.params.id);
+        
         if (!habit) {
             return res.status(404).json({ message: 'Habit not found' });
         }
 
         const todayStr = new Date().toISOString().split('T')[0];
 
+        if (!habit.records) habit.records = {};
+
         // If already marked today, do nothing or return current habit
-        if (habit.records.get(todayStr)) {
+        if (habit.records[todayStr]) {
             return res.status(200).json(habit);
         }
 
-        habit.records.set(todayStr, true);
+        habit.records[todayStr] = true;
 
         // Streak logic
         const yesterdayStr = getYesterdayString(todayStr);
-        if (habit.records.get(yesterdayStr)) {
+        if (habit.records[yesterdayStr]) {
             habit.streakCount += 1;
         } else {
             habit.streakCount = 1;
         }
 
-        await habit.save();
+        await writeData(habits);
         res.status(200).json(habit);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -92,32 +114,33 @@ exports.markHabitCompleted = async (req, res) => {
 // @route   POST /api/habits/:id/unmark
 exports.unmarkHabit = async (req, res) => {
     try {
-        const habit = await Habit.findById(req.params.id);
+        const habits = await readData();
+        const habit = habits.find(h => h._id === req.params.id);
+        
         if (!habit) {
             return res.status(404).json({ message: 'Habit not found' });
         }
 
         const todayStr = new Date().toISOString().split('T')[0];
 
+        if (!habit.records) habit.records = {};
+
         // If not marked today, do nothing
-        if (!habit.records.get(todayStr)) {
+        if (!habit.records[todayStr]) {
             return res.status(200).json(habit);
         }
 
-        habit.records.delete(todayStr);
+        delete habit.records[todayStr];
 
         // Streak logic revert:
-        // If they unmark today, and yesterday was marked, their streak just goes back
-        // to what it was yesterday (which is current streak - 1).
-        // If yesterday was NOT marked, then they had just started a new streak today of 1, so it becomes 0.
         const yesterdayStr = getYesterdayString(todayStr);
-        if (habit.records.get(yesterdayStr)) {
+        if (habit.records[yesterdayStr]) {
             habit.streakCount = Math.max(0, habit.streakCount - 1);
         } else {
             habit.streakCount = 0;
         }
 
-        await habit.save();
+        await writeData(habits);
         res.status(200).json(habit);
     } catch (error) {
         res.status(500).json({ message: error.message });
