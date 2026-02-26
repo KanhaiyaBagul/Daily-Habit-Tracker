@@ -1,4 +1,6 @@
 const { readData, writeData } = require('../models/Habit');
+const { readUserData, writeUserData } = require('../models/User');
+const { calculateLevel } = require('../controllers/userController');
 const crypto = require('crypto');
 
 // @desc    Get all habits
@@ -97,13 +99,26 @@ exports.markHabitCompleted = async (req, res) => {
 
         // Streak logic
         const yesterdayStr = getYesterdayString(todayStr);
+        let bonusXP = 0;
+
         if (habit.records[yesterdayStr]) {
             habit.streakCount += 1;
+            // Bonus XP logic
+            if (habit.streakCount === 7) bonusXP = 50;
+            if (habit.streakCount === 14) bonusXP = 100;
+            if (habit.streakCount === 30) bonusXP = 200;
         } else {
             habit.streakCount = 1;
         }
 
         await writeData(habits);
+
+        // User XP logic
+        const user = await readUserData();
+        user.xp += 10 + bonusXP;
+        user.level = calculateLevel(user.xp);
+        await writeUserData(user);
+
         res.status(200).json(habit);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -134,13 +149,26 @@ exports.unmarkHabit = async (req, res) => {
 
         // Streak logic revert:
         const yesterdayStr = getYesterdayString(todayStr);
+        let lostBonusXP = 0;
+        
+        // Revert bonus logic if we had hit exactly the milestone yesterday
         if (habit.records[yesterdayStr]) {
+            if (habit.streakCount === 7) lostBonusXP = 50;
+            if (habit.streakCount === 14) lostBonusXP = 100;
+            if (habit.streakCount === 30) lostBonusXP = 200;
             habit.streakCount = Math.max(0, habit.streakCount - 1);
         } else {
             habit.streakCount = 0;
         }
 
         await writeData(habits);
+
+        // User XP revert logic
+        const user = await readUserData();
+        user.xp = Math.max(0, user.xp - 10 - lostBonusXP);
+        user.level = calculateLevel(user.xp);
+        await writeUserData(user);
+
         res.status(200).json(habit);
     } catch (error) {
         res.status(500).json({ message: error.message });

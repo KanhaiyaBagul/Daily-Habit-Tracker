@@ -17,6 +17,7 @@ app.use(express.static(path.join(__dirname, 'views')));
 
 // API Routes
 app.use('/api/habits', require('./routes/habitRoutes'));
+app.use('/api/user', require('./routes/userRoutes'));
 
 // Main entry point for frontend
 app.get('/', (req, res) => {
