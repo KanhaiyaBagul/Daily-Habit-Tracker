@@ -392,6 +392,7 @@ button {
 
 /* Habits Section */
 .habits-section {
+    margin-top: 2.5rem;
     animation: fadeIn 0.8s ease-out 0.4s both;
 }
 
