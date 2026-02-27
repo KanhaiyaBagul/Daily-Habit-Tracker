@@ -10,11 +10,30 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/themes.js"></script>
 </head>
 
 <body>
     <div class="app-container">
         <header class="app-header">
+            <div class="header-top">
+                <div class="theme-controls">
+                    <div class="preset-selector">
+                        <button class="theme-preset-btn" data-theme="ocean" title="Ocean Theme"></button>
+                        <button class="theme-preset-btn" data-theme="forest" title="Forest Theme"></button>
+                        <button class="theme-preset-btn" data-theme="sunset" title="Sunset Theme"></button>
+                    </div>
+                    <div class="theme-toggle-wrapper">
+                        <label class="switch">
+                            <input type="checkbox" id="themeModeToggle">
+                            <span class="slider">
+                                <i class="fas fa-sun slider-icon"></i>
+                                <i class="fas fa-moon slider-icon"></i>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
             <div class="header-content">
                 <h1>Daily Habit Tracker</h1>
                 <p>Stay consistent, build streaks, achieve your goals.</p>
