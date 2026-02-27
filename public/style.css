@@ -96,6 +96,10 @@
     box-sizing: border-box;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     font-family: var(--font-family);
     background-color: var(--bg-color);
@@ -108,6 +112,7 @@ body {
         radial-gradient(circle at 15% 50%, color-mix(in srgb, var(--primary-color) 5%, transparent), transparent 25%),
         radial-gradient(circle at 85% 30%, color-mix(in srgb, var(--success-color) 5%, transparent), transparent 25%);
     transition: background-color var(--transition-speed), color var(--transition-speed);
+    overflow-x: hidden;
 }
 
 .app-container {
@@ -146,6 +151,12 @@ p {
     text-align: center;
     margin-bottom: 1rem;
     animation: fadeInDown 0.8s ease-out;
+    position: relative;
+}
+
+.header-content {
+    position: relative;
+    z-index: 1;
 }
 
 /* Gamification UI */
@@ -414,27 +425,60 @@ button {
     background-color: var(--primary-color);
     color: #ffffff;
     padding: 0.8rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-primary:hover::before {
+    width: 300px;
+    height: 300px;
 }
 
 .btn-primary:hover {
     background-color: var(--primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3);
+    box-shadow: 0 6px 20px rgba(88, 166, 255, 0.4);
 }
 
+.btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(88, 166, 255, 0.3);
+}
+
+/* Improved Delete Button */
 .btn-icon {
     background: transparent;
     color: var(--text-muted);
     padding: 0.5rem;
     font-size: 1.2rem;
+    transition: all 0.3s ease;
 }
 
 .btn-icon:hover {
-    color: var(--danger-hover);
-    transform: scale(1.1);
+    color: var(--danger-color);
+    transform: scale(1.15) rotate(10deg);
+    background-color: rgba(207, 34, 46, 0.1);
+    border-radius: 50%;
 }
 
-.btn-check {
+.btn-icon:active {
+    transform: scale(1.05) rotate(5deg);
+}
+
+/* Actions */
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -442,13 +486,32 @@ button {
     border: 2px solid var(--border-color);
     color: transparent;
     font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-check:hover {
+    transform: scale(1.1) rotate(5deg);
+    border-color: var(--success-color);
 }
 
 .btn-check.completed {
     background-color: var(--success-color);
     border-color: var(--success-color);
     color: white;
-    box-shadow: 0 0 15px rgba(35, 134, 54, 0.4);
+    box-shadow: 0 0 20px rgba(35, 134, 54, 0.5);
+    animation: checkPulse 0.6s ease-out;
+}
+
+@keyframes checkPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
 
 /* Habits Section */
@@ -490,10 +553,17 @@ button {
     display: flex;
     flex-direction: column;
     gap: 1.2rem;
-    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    animation: slideInUp 0.5s ease-out backwards;
 }
+
+.habit-card:nth-child(1) { animation-delay: 0.1s; }
+.habit-card:nth-child(2) { animation-delay: 0.2s; }
+.habit-card:nth-child(3) { animation-delay: 0.3s; }
+.habit-card:nth-child(4) { animation-delay: 0.4s; }
+.habit-card:nth-child(5) { animation-delay: 0.5s; }
 
 .habit-main {
     display: flex;
@@ -532,25 +602,36 @@ button {
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--text-muted);
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: default;
+}
+
+.history-day:hover {
+    transform: translateY(-2px);
 }
 
 .history-day.active {
     background-color: var(--success-color);
     border-color: var(--success-color);
     color: white;
-    box-shadow: 0 0 10px rgba(35, 134, 54, 0.3);
+    box-shadow: 0 0 12px rgba(35, 134, 54, 0.4);
+    transform: scale(1.05);
 }
 
 .history-day.today {
     border-color: var(--primary-color);
     border-width: 2px;
+    box-shadow: 0 0 8px rgba(88, 166, 255, 0.3);
 }
 
 .habit-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1);
     border-color: var(--primary-color);
+}
+
+.habit-card:active {
+    transform: translateY(-2px) scale(1.005);
 }
 
 /* A slight gradient glow indicating active state */
@@ -603,6 +684,8 @@ button {
     align-items: center;
     gap: 1rem;
 }
+
+.btn-check {
 
 /* Empty State */
 .empty-state {
@@ -703,10 +786,34 @@ button {
     }
 }
 
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
 /* Responsive */
 @media (max-width: 600px) {
     .app-container {
         padding: 1rem;
+    }
+
+    h1 {
+        font-size: 2rem;
     }
 
     .input-group {
@@ -723,6 +830,31 @@ button {
         width: 100%;
         justify-content: space-between;
         margin-top: 0.5rem;
+    }
+
+    .user-stats-container {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .xp-bar-container {
+        max-width: 100%;
+    }
+
+    .theme-controls {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .history-days {
+        gap: 6px;
+    }
+
+    .history-day {
+        width: 24px;
+        height: 24px;
+        font-size: 0.7rem;
     }
 }
 
@@ -764,4 +896,54 @@ button {
 
 .btn-secondary:hover {
     background-color: var(--border-color);
+}
+
+/* Loading Skeleton */
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--surface-color) 0%,
+        var(--surface-hover) 50%,
+        var(--surface-color) 100%
+    );
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite linear;
+    border-radius: var(--border-radius);
+}
+
+.skeleton-card {
+    height: 120px;
+    margin-bottom: 1rem;
+}
+
+/* Improved Focus States */
+button:focus-visible,
+input:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Smooth Transitions for Theme Changes */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Improved Delete Button */
+.btn-icon {
+    background: transparent;
+    color: var(--text-muted);
+    padding: 0.5rem;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.btn-icon:hover {
+    color: var(--danger-color);
+    transform: scale(1.15) rotate(10deg);
+    background-color: rgba(207, 34, 46, 0.1);
+    border-radius: 50%;
+}
+
+.btn-icon:active {
+    transform: scale(1.05) rotate(5deg);
 }
