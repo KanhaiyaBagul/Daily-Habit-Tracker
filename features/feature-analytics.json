@@ -1,0 +1,10 @@
+{
+  "feature": "Deep Analytics & Heatmaps",
+  "description": "Create a new page dedicated to statistics. Display a GitHub-style green contribution heatmap for the entire year showing when habits were completed. Provide visual consistency over months.",
+  "difficulty": "Hard",
+  "commandsToStart": [
+    "git checkout main",
+    "git pull origin main",
+    "git checkout -b feature/analytics"
+  ]
+}

@@ -1,9 +1,7 @@
-// models/Habit.js
 const fs = require('fs').promises;
 const path = require('path');
-const crypto = require('crypto');
 
-const dataFile = path.join(__dirname, '..', 'data', 'habits.json');
+const dataFile = path.join(__dirname, '..', 'data', 'user.json');
 
 const initDataStore = async () => {
     try {
@@ -11,29 +9,29 @@ const initDataStore = async () => {
         try {
             await fs.access(dataFile);
         } catch {
-            await fs.writeFile(dataFile, JSON.stringify([]));
+            await fs.writeFile(dataFile, JSON.stringify({ xp: 0, level: 1 }));
         }
     } catch (err) {
-        console.error('Error initializing data store:', err);
+        console.error('Error initializing user data store:', err);
     }
 };
 
 initDataStore();
 
-const readData = async () => {
+const readUserData = async () => {
     try {
         const data = await fs.readFile(dataFile, 'utf8');
         return JSON.parse(data);
     } catch (err) {
-        return [];
+        return { xp: 0, level: 1 };
     }
 };
 
-const writeData = async (data) => {
+const writeUserData = async (data) => {
     await fs.writeFile(dataFile, JSON.stringify(data, null, 2));
 };
 
 module.exports = {
-    readData,
-    writeData
+    readUserData,
+    writeUserData
 };

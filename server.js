@@ -2,10 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const connectDB = require('./config/db');
 
-// Connect to MongoDB
-connectDB();
+
 
 const app = express();
 
@@ -19,6 +17,7 @@ app.use(express.static(path.join(__dirname, 'views')));
 
 // API Routes
 app.use('/api/habits', require('./routes/habitRoutes'));
+app.use('/api/user', require('./routes/userRoutes'));
 
 // Main entry point for frontend
 app.get('/', (req, res) => {

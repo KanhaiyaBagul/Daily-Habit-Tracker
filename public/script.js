@@ -10,7 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // State
     const API_URL = '/api/habits';
+    const USER_API_URL = '/api/user';
     let habits = [];
+    let userStats = { xp: 0, level: 1 };
     let userId = '';
 
     // Initialize User ID
@@ -61,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     dateDisplay.textContent = new Date().toLocaleDateString(undefined, options);
 
     // Initial Fetch
+    fetchUserStats();
     fetchHabits();
 
     // Event Listeners
@@ -93,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
             input.value = '';
             showToast('Habit added successfully!', 'success');
             await fetchHabits();
+            await fetchUserStats();
         } catch (error) {
             showToast(error.message, 'error');
         } finally {
@@ -114,6 +118,37 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             showToast('Failed to load habits', 'error');
         }
+    }
+
+    // Fetch User Stats helper
+    async function fetchUserStats() {
+        try {
+            const res = await fetch(USER_API_URL);
+            userStats = await res.json();
+            updateUserUI();
+        } catch (error) {
+            console.error('Failed to load user stats', error);
+        }
+    }
+
+    function updateUserUI() {
+        const levelDisplay = document.getElementById('userLevelDisplay');
+        const xpDisplay = document.getElementById('userXpDisplay');
+        const xpFill = document.getElementById('xpFillBar');
+
+        if (!levelDisplay || !xpDisplay || !xpFill) return;
+
+        levelDisplay.textContent = `Level ${userStats.level}`;
+        
+        // Calculate progress to next level
+        const currentLevelXpStart = (userStats.level - 1) * 100;
+        const nextLevelXpStart = userStats.level * 100;
+        const xpInCurrentLevel = userStats.xp - currentLevelXpStart;
+        
+        xpDisplay.textContent = `${xpInCurrentLevel} / 100 XP`;
+        
+        const percentage = Math.min(100, Math.max(0, (xpInCurrentLevel / 100) * 100));
+        xpFill.style.width = `${percentage}%`;
     }
 
     // Render Habits
@@ -196,7 +231,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast('Nice work! Streak updated 🔥', 'success');
             }
 
-            fetchHabits();
+            await fetchHabits();
+            await fetchUserStats();
         } catch (error) {
             showToast(error.message, 'error');
         }
