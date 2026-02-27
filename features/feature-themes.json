@@ -1,0 +1,10 @@
+{
+  "feature": "Custom Themes & Dark Mode",
+  "description": "Add a slick toggle to switch the entire UI to a dark, sleek aesthetic. Allow saving 'theme colors' like Forest, Ocean, or Sunset.",
+  "difficulty": "Easy",
+  "commandsToStart": [
+    "git checkout main",
+    "git pull origin main",
+    "git checkout -b feature/custom-themes"
+  ]
+}

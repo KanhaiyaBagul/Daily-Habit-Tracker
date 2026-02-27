@@ -148,6 +148,67 @@ p {
     animation: fadeInDown 0.8s ease-out;
 }
 
+/* Gamification UI */
+.user-stats-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    background-color: var(--surface-color);
+    padding: 1rem 2rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.level-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #e3b341;
+}
+
+.level-badge i {
+    text-shadow: 0 0 10px rgba(227, 179, 65, 0.5);
+}
+
+.xp-bar-container {
+    flex: 1;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.xp-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.xp-track {
+    width: 100%;
+    height: 8px;
+    background-color: var(--bg-color);
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.xp-fill {
+    height: 100%;
+    width: 0%; /* Dynamic */
+    background: linear-gradient(90deg, var(--primary-color), #a371f7);
+    border-radius: 4px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Header Top */
 .header-top {
     display: flex;
     justify-content: flex-end;
@@ -392,6 +453,7 @@ button {
 
 /* Habits Section */
 .habits-section {
+    margin-top: 2.5rem;
     animation: fadeIn 0.8s ease-out 0.4s both;
 }
 

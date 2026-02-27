@@ -1,0 +1,10 @@
+{
+  "feature": "PWA (Progressive Web App)",
+  "description": "Add a manifest.json and a Service Worker so users can 'Install' the web app directly to their phone's home screen or desktop. Add offline support since data is already locally stored.",
+  "difficulty": "Easy",
+  "commandsToStart": [
+    "git checkout main",
+    "git pull origin main",
+    "git checkout -b feature/pwa-support"
+  ]
+}
