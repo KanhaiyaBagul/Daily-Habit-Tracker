@@ -13,6 +13,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const USER_API_URL = '/api/user';
     let habits = [];
     let userStats = { xp: 0, level: 1 };
+    let userId = '';
+
+    // Initialize User ID
+    function initUser() {
+        // 1. Check if URL contains ?userId= (from a shared link)
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlUserId = urlParams.get('userId');
+
+        if (urlUserId) {
+            // Overwrite local storage with the synced ID
+            localStorage.setItem('habitUserId', urlUserId);
+            // Clean up the URL so it looks nice
+            window.history.replaceState({}, document.title, window.location.pathname);
+            showToast('Device synced successfully!', 'success');
+        }
+
+        // 2. Get from local storage
+        userId = localStorage.getItem('habitUserId');
+
+        // 3. If still no ID, generate a new anonymous one
+        if (!userId) {
+            userId = 'guest_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+            localStorage.setItem('habitUserId', userId);
+        }
+    }
+
+    initUser();
+
+    // Sync Modal Elements
+    const syncBtn = document.getElementById('syncBtn');
+    const syncModal = document.getElementById('syncModal');
+    const syncLinkInput = document.getElementById('syncLinkInput');
+    const copyLinkBtn = document.getElementById('copyLinkBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
 
     // Get today's string (YYYY-MM-DD local timezone)
     const getTodayString = () => {
@@ -46,7 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res = await fetch(API_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-user-id': userId
+                },
                 body: JSON.stringify({ habitName })
             });
 
@@ -71,7 +108,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch Habits helper
     async function fetchHabits() {
         try {
-            const res = await fetch(API_URL);
+            const res = await fetch(API_URL, {
+                headers: {
+                    'x-user-id': userId
+                }
+            });
             habits = await res.json();
             renderHabits();
         } catch (error) {
@@ -177,7 +218,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const res = await fetch(`${API_URL}/${id}/${action}`, {
-                method: 'POST'
+                method: 'POST',
+                headers: {
+                    'x-user-id': userId
+                }
             });
 
             if (!res.ok) throw new Error('Failed to update status');
@@ -197,7 +241,10 @@ document.addEventListener('DOMContentLoaded', () => {
     async function deleteHabit(id) {
         try {
             const res = await fetch(`${API_URL}/${id}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: {
+                    'x-user-id': userId
+                }
             });
 
             if (!res.ok) throw new Error('Failed to delete habit');
@@ -208,6 +255,39 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast(error.message, 'error');
         }
     }
+
+    // Modal Events
+    if (syncBtn) {
+        syncBtn.addEventListener('click', () => {
+            const syncUrl = `${window.location.origin}${window.location.pathname}?userId=${userId}`;
+            syncLinkInput.value = syncUrl;
+            syncModal.classList.remove('hidden');
+        });
+    }
+
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', () => {
+            syncModal.classList.add('hidden');
+        });
+    }
+
+    if (copyLinkBtn) {
+        copyLinkBtn.addEventListener('click', () => {
+            syncLinkInput.select();
+            document.execCommand('copy');
+            copyLinkBtn.textContent = 'Copied!';
+            setTimeout(() => {
+                copyLinkBtn.textContent = 'Copy';
+            }, 2000);
+        });
+    }
+
+    // Close modal on outside click
+    syncModal.addEventListener('click', (e) => {
+        if (e.target === syncModal) {
+            syncModal.classList.add('hidden');
+        }
+    });
 
     // UI Utilities
     function showToast(message, type = 'success') {
