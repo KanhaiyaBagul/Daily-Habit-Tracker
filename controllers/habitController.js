@@ -4,7 +4,12 @@ const Habit = require('../models/Habit');
 // @route   GET /api/habits
 exports.getAllHabits = async (req, res) => {
     try {
-        const habits = await Habit.find().sort({ createdAt: -1 });
+        const userId = req.headers['x-user-id'];
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID header is missing' });
+        }
+
+        const habits = await Habit.find({ userId }).sort({ createdAt: -1 });
         res.status(200).json(habits);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -15,17 +20,22 @@ exports.getAllHabits = async (req, res) => {
 // @route   POST /api/habits
 exports.createHabit = async (req, res) => {
     try {
+        const userId = req.headers['x-user-id'];
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID header is missing' });
+        }
+
         const { habitName } = req.body;
         if (!habitName) {
             return res.status(400).json({ message: 'Habit name is required' });
         }
 
-        const habitExists = await Habit.findOne({ habitName });
+        const habitExists = await Habit.findOne({ habitName, userId });
         if (habitExists) {
             return res.status(400).json({ message: 'Habit already exists' });
         }
 
-        const habit = await Habit.create({ habitName });
+        const habit = await Habit.create({ habitName, userId });
         res.status(201).json(habit);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -36,9 +46,14 @@ exports.createHabit = async (req, res) => {
 // @route   DELETE /api/habits/:id
 exports.deleteHabit = async (req, res) => {
     try {
-        const habit = await Habit.findById(req.params.id);
+        const userId = req.headers['x-user-id'];
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID header is missing' });
+        }
+
+        const habit = await Habit.findOne({ _id: req.params.id, userId });
         if (!habit) {
-            return res.status(404).json({ message: 'Habit not found' });
+            return res.status(404).json({ message: 'Habit not found or unauthorized' });
         }
 
         await habit.deleteOne();
@@ -59,9 +74,14 @@ const getYesterdayString = (todayStr) => {
 // @route   POST /api/habits/:id/mark
 exports.markHabitCompleted = async (req, res) => {
     try {
-        const habit = await Habit.findById(req.params.id);
+        const userId = req.headers['x-user-id'];
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID header is missing' });
+        }
+
+        const habit = await Habit.findOne({ _id: req.params.id, userId });
         if (!habit) {
-            return res.status(404).json({ message: 'Habit not found' });
+            return res.status(404).json({ message: 'Habit not found or unauthorized' });
         }
 
         const todayStr = new Date().toISOString().split('T')[0];
@@ -92,9 +112,14 @@ exports.markHabitCompleted = async (req, res) => {
 // @route   POST /api/habits/:id/unmark
 exports.unmarkHabit = async (req, res) => {
     try {
-        const habit = await Habit.findById(req.params.id);
+        const userId = req.headers['x-user-id'];
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID header is missing' });
+        }
+
+        const habit = await Habit.findOne({ _id: req.params.id, userId });
         if (!habit) {
-            return res.status(404).json({ message: 'Habit not found' });
+            return res.status(404).json({ message: 'Habit not found or unauthorized' });
         }
 
         const todayStr = new Date().toISOString().split('T')[0];
